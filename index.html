@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>Mind Matrix — Brain Training</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#121d2e;--panel2:#19263a;--text:#edf3fb;--muted:#9aabc0;--line:#2a3a50;--accent:#78a9ff;--accent2:#a6c5ff;--good:#48c79a;--bad:#ed7777;--gold:#e4bd68}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#203452 0,transparent 55%),var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh}
+button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.app{width:min(100% - 28px,980px);margin:0 auto;padding:22px 0 42px}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:11px}.logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#8bb7ff,#526fbd);color:#081326;font-size:23px;font-weight:900}
+h1{font-size:clamp(22px,4vw,30px);line-height:1.1;margin:0}.tagline{font-size:12px;color:var(--muted);margin-top:4px;letter-spacing:.08em;text-transform:uppercase}
+.header-actions{display:flex;gap:8px}.icon-btn,.secondary,.primary,.choice,.level-btn{border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--text);padding:10px 13px}
+.icon-btn{width:42px;height:42px;padding:0;font-size:18px}.primary{background:var(--accent);color:#091426;border-color:var(--accent);font-weight:750;padding:12px 20px}.primary:disabled{opacity:.45;cursor:not-allowed}
+.layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(245px,.8fr);gap:16px;align-items:start}
+.card{background:linear-gradient(180deg,rgba(25,38,58,.97),rgba(18,29,46,.97));border:1px solid var(--line);border-radius:20px;padding:18px}
+.card h2{font-size:17px;margin:0 0 13px}.muted{color:var(--muted)}.small{font-size:13px}
+.section{margin-bottom:18px}.choices{display:flex;flex-wrap:wrap;gap:8px}.choice{min-width:62px;padding:9px 12px}.choice.active,.level-btn.active{border-color:var(--accent);background:#263d60;box-shadow:inset 0 0 0 1px var(--accent)}
+.levels{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}.level-btn{padding:8px 0;font-size:13px;border-radius:9px}.level-btn:disabled{opacity:.3;cursor:not-allowed}
+.game-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}.phase{font-size:13px;color:var(--muted)}.badge{border:1px solid var(--line);background:var(--panel2);border-radius:999px;padding:5px 10px;font-size:12px}
+.progress{height:6px;background:#263449;border-radius:99px;overflow:hidden;margin:10px 0 16px}.progress>span{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+#grid{width:min(100%,520px);margin:0 auto;display:grid;gap:6px;touch-action:manipulation;user-select:none}
+.cell{aspect-ratio:1;min-width:0;border:1px solid #35465d;border-radius:8px;background:#202f45;transition:background .12s,border-color .12s;min-height:0;padding:0}
+.cell.show{background:#d8b66c;border-color:#f0d18c}.cell.correct{background:#368d72;border-color:#55c39c}.cell.wrong{background:#a94f58;border-color:#e47d85}
+.cell:disabled{cursor:default}.game-message{text-align:center;min-height:28px;margin:14px 0 10px;font-weight:650}.game-actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.stat{background:var(--panel2);border:1px solid var(--line);border-radius:13px;padding:12px}.stat strong{display:block;font-size:22px}.stat span{font-size:12px;color:var(--muted)}
+.side-card{margin-bottom:14px}.side-card p{margin:7px 0}.rule-list{padding-left:18px;margin:8px 0;color:var(--muted);font-size:13px}.rule-list li{margin:6px 0}
+.footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
+.hidden{display:none!important}
+body.light{color-scheme:light;--bg:#eef3f9;--panel:#fff;--panel2:#f3f6fb;--text:#182538;--muted:#607087;--line:#d6dfeb;--accent:#315fae;--accent2:#315fae}
+body.light{background:radial-gradient(ellipse at 50% -20%,#d9e7fb 0,transparent 55%),var(--bg)}
+body.light .cell{background:#e4ebf4;border-color:#c8d4e3}body.light .cell.show{background:#e7c66e}body.light .cell.correct{background:#72c5a7}body.light .cell.wrong{background:#e38b91}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.app{width:min(100% - 20px,600px);padding-top:15px}.card{padding:15px}.levels{grid-template-columns:repeat(10,minmax(0,1fr))}}
+@media(max-width:390px){.levels{grid-template-columns:repeat(5,minmax(0,1fr))}#grid{gap:4px}.cell{border-radius:5px}.brand .tagline{font-size:10px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <div class="brand"><div class="logo">M</div><div><h1>Mind Matrix</h1><div class="tagline">Train your memory. Sharpen your focus.</div></div></div>
+ <div class="header-actions"><button class="icon-btn" id="soundBtn" title="Toggle sound" aria-label="Toggle sound">🔊</button><button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">☀️</button></div>
+</header>
+
+<div class="layout">
+ <main class="card">
+  <div class="section">
+   <h2>Choose your grid</h2>
+   <div class="choices" id="gridChoices">
+    <button class="choice" data-size="3">3 × 3</button><button class="choice" data-size="4">4 × 4</button><button class="choice" data-size="5">5 × 5</button><button class="choice active" data-size="6">6 × 6</button><button class="choice" data-size="7">7 × 7</button><button class="choice" data-size="8">8 × 8</button>
+   </div>
+  </div>
+  <div class="section">
+   <div class="game-top"><h2 style="margin:0">Select level</h2><span class="badge" id="unlockBadge">Level 1 unlocked</span></div>
+   <div class="levels" id="levels"></div>
+  </div>
+  <div class="game-top"><span class="badge" id="levelBadge">6 × 6 · Level 1</span><span class="phase" id="phase">Ready to play</span></div>
+  <div class="progress"><span id="progressBar"></span></div>
+  <div id="grid" aria-label="Memory grid"></div>
+  <div class="game-message" id="message" aria-live="polite">Press Start when you're ready.</div>
+  <div class="game-actions">
+   <button class="primary" id="startBtn">Start game</button>
+   <button class="secondary" id="restartBtn">Restart level</button>
+  </div>
+ </main>
+
+ <aside>
+  <div class="card side-card">
+   <h2>Your performance</h2>
+   <div class="stats">
+    <div class="stat"><strong id="score">0</strong><span>Total score</span></div>
+    <div class="stat"><strong id="best">0</strong><span>Best score</span></div>
+    <div class="stat"><strong id="completed">0</strong><span>Levels cleared</span></div>
+    <div class="stat"><strong id="accuracy">—</strong><span>Tap accuracy</span></div>
+   </div>
+  </div>
+  <div class="card side-card">
+   <h2>How to play</h2>
+   <ol class="rule-list">
+    <li>Watch the highlighted squares carefully.</li>
+    <li>When they disappear, tap the same squares.</li>
+    <li>Find every square without making a mistake.</li>
+    <li>Complete a level to unlock the next one.</li>
+   </ol>
+   <p class="small muted">Each grid has 20 levels. Larger grids and higher levels challenge your working memory.</p>
+  </div>
+  <div class="card">
+   <h2>Challenge settings</h2>
+   <p class="small muted">Memory display time decreases gradually as levels rise. Each new level adds more squares.</p>
+   <button class="secondary" id="resetProgress" style="width:100%;margin-top:8px">Reset all progress</button>
+  </div>
+ </aside>
+</div>
+<div class="footer">Mind Matrix · A simple brain-training game · Progress is saved on this device</div>
+</div>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const STORE='mindMatrixProgressV1';
+const defaults={score:0,best:0,completed:{},attempts:0,hits:0,sound:true,light:false};
+let data;
+try{data={...defaults,...JSON.parse(localStorage.getItem(STORE)||'{}')};}catch(e){data={...defaults};}
+data.completed=data.completed||{};
+let size=6,level=1,pattern=[],picked=[],phase='idle',timer=null,roundToken=0,audioCtx=null;
+const grid=$('grid'),msg=$('message'),start=$('startBtn'),phaseText=$('phase');
+function save(){try{localStorage.setItem(STORE,JSON.stringify(data));}catch(e){}}
+function key(){return size+'x'+size}
+function unlocked(){return Math.min(20,1+(data.completed[key()]||0))}
+function levelSquares(){return Math.min(size*size-1,Math.max(2,Math.round(1+level*0.85)+(size-3)*0.65));}
+function showTime(){return Math.max(650,2300-(level-1)*75-(size-3)*80);}
+function accuracy(){return data.attempts?Math.round(data.hits/data.attempts*100):null;}
+function renderStats(){
+ $('score').textContent=data.score;$('best').textContent=data.best;
+ $('completed').textContent=Object.values(data.completed).reduce((a,b)=>a+b,0);
+ $('accuracy').textContent=accuracy()===null?'—':accuracy()+'%';
+ $('soundBtn').textContent=data.sound?'🔊':'🔇';
+ document.body.classList.toggle('light',!!data.light);$('themeBtn').textContent=data.light?'🌙':'☀️';
+}
+function renderLevels(){
+ $('levels').innerHTML='';
+ const max=unlocked();
+ for(let i=1;i<=20;i++){
+  const b=document.createElement('button');b.className='level-btn'+(i===level?' active':'');
+  b.textContent=i;b.disabled=i>max;b.title=i>max?'Complete the previous level to unlock':'Level '+i;
+  b.addEventListener('click',()=>{level=i;resetRound();renderLevels();});
+  $('levels').append(b);
+ }
+ $('unlockBadge').textContent='Level '+max+' unlocked';
+ $('levelBadge').textContent=size+' × '+size+' · Level '+level;
+}
+function makeGrid(){
+ grid.style.gridTemplateColumns=`repeat(${size},minmax(0,1fr))`;grid.innerHTML='';
+ for(let i=0;i<size*size;i++){
+  const b=document.createElement('button');b.type='button';b.className='cell';b.disabled=true;
+  b.setAttribute('aria-label','Cell '+(i+1));b.addEventListener('click',()=>tapCell(i,b));grid.append(b);
+ }
+}
+function clearTimer(){if(timer){clearTimeout(timer);timer=null;}roundToken++;}
+function resetRound(){
+ clearTimer();phase='idle';pattern=[];picked=[];makeGrid();
+ phaseText.textContent='Ready to play';msg.textContent='Press Start when you’re ready.';
+ $('progressBar').style.width='0%';start.textContent='Start game';start.disabled=false;
+}
+function tone(freq=520,duration=.07){
+ if(!data.sound)return;
+ try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=freq;o.type='sine';g.gain.setValueAtTime(.045,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+duration);}catch(e){}
+}
+function vibrate(ms=18){if(navigator.vibrate)navigator.vibrate(ms);}
+function begin(){
+ clearTimer();phase='show';picked=[];pattern=[];
+ const total=levelSquares(),n=size*size;
+ while(pattern.length<total){const x=Math.floor(Math.random()*n);if(!pattern.includes(x))pattern.push(x);}
+ makeGrid();phaseText.textContent='Memorise';msg.textContent='Remember the highlighted squares…';start.disabled=true;
+ $('progressBar').style.width='35%';
+ pattern.forEach(i=>grid.children[i].classList.add('show'));
+ const token=roundToken;
+ timer=setTimeout(()=>{
+  if(token!==roundToken)return;
+  [...grid.children].forEach(b=>{b.classList.remove('show');b.disabled=false;});
+  phase='input';phaseText.textContent='Your turn';msg.textContent='Tap all '+total+' remembered squares.';
+  $('progressBar').style.width='60%';start.textContent='Memorising…';
+ },showTime());
+}
+function tapCell(i,b){
+ if(phase!=='input'||picked.includes(i))return;
+ picked.push(i);data.attempts++;
+ if(pattern.includes(i)){
+  data.hits++;b.classList.add('correct');tone(650);vibrate(12);
+  if(picked.length===pattern.length){
+   phase='won';clearTimer();const points=(size*10)+(level*25)+(pattern.length*5);
+   data.score+=points;data.best=Math.max(data.best,data.score);
+   data.completed[key()]=Math.max(data.completed[key()]||0,level);
+   save();renderStats();renderLevels();phaseText.textContent='Level complete';
+   msg.textContent='Excellent! +'+points+' points. Level '+level+' cleared.';
+   $('progressBar').style.width='100%';start.disabled=false;
+   if(level<20){start.textContent='Next level →';}
+   else{start.textContent='Grid completed!';start.disabled=true;}
+  }else{
+   msg.textContent=(pattern.length-picked.length)+' square(s) left.';
+   $('progressBar').style.width=(60+35*picked.length/pattern.length)+'%';
+  }
+ }else{
+  b.classList.add('wrong');tone(180,.14);vibrate(90);phase='lost';
+  data.score=Math.max(0,data.score-10);save();renderStats();
+  [...grid.children].forEach(x=>x.disabled=true);
+  pattern.forEach(x=>grid.children[x].classList.add('show'));
+  phaseText.textContent='Try again';msg.textContent='Not quite. The pattern is shown above. Retry this level.';
+  start.disabled=false;start.textContent='Try again';
+ }
+}
+function handleStart(){
+ if(phase==='won' && level<20){
+  level++;renderLevels();resetRound();begin();return;
+ }
+ if(phase==='idle' || phase==='lost'){begin();}
+}
+$('gridChoices').addEventListener('click',e=>{
+ const b=e.target.closest('[data-size]');if(!b)return;
+ size=Number(b.dataset.size);level=1;
+ document.querySelectorAll('.choice').forEach(x=>x.classList.toggle('active',x===b));
+ renderLevels();resetRound();
+});
+start.addEventListener('click',handleStart);
+$('restartBtn').addEventListener('click',()=>{resetRound();});
+$('soundBtn').addEventListener('click',()=>{data.sound=!data.sound;save();renderStats();});
+$('themeBtn').addEventListener('click',()=>{data.light=!data.light;save();renderStats();});
+$('resetProgress').addEventListener('click',()=>{
+ if(!confirm('Reset all Mind Matrix scores and unlocked levels on this device?'))return;
+ data={...defaults,completed:{}};save();level=1;renderStats();renderLevels();resetRound();
+});
+renderStats();renderLevels();resetRound();
+})();
+</script>
+</body>
+</html>
